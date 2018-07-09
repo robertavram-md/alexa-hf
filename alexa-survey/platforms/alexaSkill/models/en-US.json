@@ -1,0 +1,29 @@
+{
+	"interactionModel": {
+		"languageModel": {
+			"invocationName": "heart failure skill",
+			"types": [],
+			"intents": [
+				{
+					"name": "GetFirstSurveyIntent", 
+					"samples": [
+						"run first survey",
+						"run heart failure survey"
+					]
+				},
+				{
+					"name": "AMAZON.CancelIntent",
+					"samples": []
+				},
+				{
+					"name": "AMAZON.HelpIntent",
+					"samples": []
+				},
+				{
+					"name": "AMAZON.StopIntent",
+					"samples": []
+				}
+			]
+		}
+	}
+}
