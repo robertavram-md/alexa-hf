@@ -4,12 +4,13 @@
     "surveyQuestions": [
         {
             "questionId": "q1",
-            "question": "Heart  failure  affects  different  people  in  different  ways.  Some  feel  shortness  of  breath  while  others  feel  fatigue.  On  a  scale  from  one  to  five,  one  being  extremely  limited  and  five  being  not  at  all  limited,  please  indicate  how  much  you  are  limited  by  heart  failure,  either  shortness  of  breath  or  fatigue,  in  your  ability  to  do  the  following  activities  over  the  past  2  weeks.  You  may  also  reply  does  not  apply  or  did  not  do  the  activity.  If  you  need  me  to  repeat  the  question,  say  repeat.",
+            "question": "Heart  failure  affects  different  people  in  different  ways.  Some  feel  shortness  of  breath  while  others  feel  fatigue.  Please  indicate  how  much  you  were  limited  by  heart  failure in  your  ability  to  do  the  following  activities  over  the  past  2  weeks. If  you  need  me  to  repeat  the  question,  say  repeat. Say  answer questions, if you are ready now.",
             "questionReprompt": "Reprompt String",
+            "shortQuestion": "short question",
             "surveyQuestions": [
                 {
                     "questionId": "q1_1",
-                    "question": "Showering or bathing",
+                    "question": " On  a  scale  from  one  to  five - one  being  extremely  limited  and  five  being  not  at  all  limited - how much you were limited while showering or bathing. <break time=\"750ms\" /> You  may  also  say did  not  do  the  activity or limited for other reasons.'",
                     "questionAnswers": [
                         {
                             "answerValue": "1",

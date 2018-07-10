@@ -1,29 +1,110 @@
 {
-	"interactionModel": {
-		"languageModel": {
-			"invocationName": "heart failure skill",
-			"types": [],
-			"intents": [
-				{
-					"name": "GetFirstSurveyIntent", 
-					"samples": [
-						"run first survey",
-						"run heart failure survey"
-					]
-				},
-				{
-					"name": "AMAZON.CancelIntent",
-					"samples": []
-				},
-				{
-					"name": "AMAZON.HelpIntent",
-					"samples": []
-				},
-				{
-					"name": "AMAZON.StopIntent",
-					"samples": []
-				}
-			]
-		}
-	}
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "heart failure skill",
+      "intents": [
+        {
+          "name": "GetFirstSurveyIntent",
+          "slots": [
+            {
+              "name": "numberAnswer",
+              "type": "AMAZON.NUMBER"
+            },
+            {
+              "name": "customAnswer",
+              "type": "surveyAnswers"
+            }
+          ],
+          "samples": [
+            "{customAnswer}",
+            "{numberAnswer}"
+          ]
+        },
+        {
+          "name": "ToAnswersIntent", 
+          "samples": [
+            "answer questions"
+          ]
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.RepeatIntent", 
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "every night"
+              }
+            },
+            {
+              "name": {
+                "value": "at least once a day"
+              }
+            },
+            {
+              "name": {
+                "value": "several times per day"
+              }
+            },
+            {
+              "name": {
+                "value": "all of the time"
+              }
+            },
+            {
+              "name": {
+                "value": "never over the past 2 weeks"
+              }
+            },
+            {
+              "name": {
+                "value": "less than once a week"
+              }
+            },
+            {
+              "name": {
+                "value": "one to two times per week"
+              }
+            },
+            {
+              "name": {
+                "value": "three or more times per week but not every day"
+              }
+            },
+            {
+              "name": {
+                "value": "every morning"
+              }
+            },
+            {
+              "name": {
+                "value": "did not do the activity"
+              }
+            },
+            {
+              "name": {
+                "value": "limited for other reasons"
+              }
+            }
+          ],
+          "name": "surveyAnswers"
+        }
+      ]
+    }
+  }
 }
