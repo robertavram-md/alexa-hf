@@ -5,10 +5,15 @@
         "en-US": {
           "summary": "Sample Short Description",
           "examplePhrases": [
-            "Alexa open hello world"
+            "Alexa open heart failure skill",
+            "",
+            ""
           ],
+          "keywords": [],
           "name": "alexa-survey",
-          "description": "Sample Full Description"
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/6523/64ba09b5e2bd49ed9c072a2b04c81379/APP_ICON?versionId=dHUjmyCEpzfunjjRLzXLlMoRTl9OyFnM&AWSAccessKeyId=AKIAIEYXX6DHY7O4XWMA&Expires=1531405875&Signature=pVaCAG0URDLAviyLDCglLYWtdi4%3D",
+          "description": "Sample Full Description",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/75e4/f21949fc38864e43aadf1dfd94bb7844/APP_ICON_LARGE?versionId=OAxw6sCtdF3bWWOratgWyrbDwfC6KYBV&AWSAccessKeyId=AKIAIEYXX6DHY7O4XWMA&Expires=1531405875&Signature=OYoO%2BolGCWyw4iPkoGIJgW1k%2BnA%3D"
         }
       },
       "isAvailableWorldwide": true,
@@ -25,6 +30,13 @@
         "interfaces": []
       }
     },
-    "manifestVersion": "1.0"
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "isExportCompliant": true,
+      "containsAds": false,
+      "isChildDirected": false,
+      "usesPersonalInfo": false
+    }
   }
 }

@@ -1,7 +1,7 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "heart failure skill",
+      "invocationName": "heart failure",
       "intents": [
         {
           "name": "GetFirstSurveyIntent",
@@ -21,7 +21,7 @@
           ]
         },
         {
-          "name": "ToAnswersIntent", 
+          "name": "ToAnswersIntent",
           "samples": [
             "answer questions"
           ]
@@ -36,10 +36,13 @@
         },
         {
           "name": "AMAZON.StopIntent",
-          "samples": []
+          "samples": [
+            "stop",
+            "stop survey"
+          ]
         },
         {
-          "name": "AMAZON.RepeatIntent", 
+          "name": "AMAZON.RepeatIntent",
           "samples": []
         }
       ],
