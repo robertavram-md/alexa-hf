@@ -7,17 +7,12 @@
           "name": "GetFirstSurveyIntent",
           "slots": [
             {
-              "name": "numberAnswer",
-              "type": "AMAZON.NUMBER"
-            },
-            {
               "name": "customAnswer",
               "type": "surveyAnswers"
             }
           ],
           "samples": [
-            "{customAnswer}",
-            "{numberAnswer}"
+            "{customAnswer}"
           ]
         },
         {
@@ -51,6 +46,31 @@
           "values": [
             {
               "name": {
+                "value": "five"
+              }
+            },
+            {
+              "name": {
+                "value": "four"
+              }
+            },
+            {
+              "name": {
+                "value": "three"
+              }
+            },
+            {
+              "name": {
+                "value": "two"
+              }
+            },
+            {
+              "name": {
+                "value": "one"
+              }
+            },
+            {
+              "name": {
                 "value": "every night"
               }
             },
@@ -71,7 +91,7 @@
             },
             {
               "name": {
-                "value": "never over the past 2 weeks"
+                "value": "never over the past two weeks"
               }
             },
             {

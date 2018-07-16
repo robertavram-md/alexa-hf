@@ -11,6 +11,7 @@
                 {
                     "questionId": "q1_1",
                     "question": " On  a  scale  from  one  to  five - one  being  extremely  limited  and  five  being  not  at  all  limited - how much you were limited while showering or bathing. <break time=\"750ms\" /> You  may  also  say did  not  do  the  activity or limited for other reasons.'",
+                    "answerType": "mixedType",
                     "questionAnswers": [
                         {
                             "answerValue": "1",
@@ -34,17 +35,18 @@
                         },
                         {
                             "answerValue": "0",
-                            "answer": "Limited  for  other  reasons"
+                            "answer": "Limited for other reasons"
                         },
                         {
                             "answerValue": "0#",
-                            "answer": "Did  not  do  the  activity"
+                            "answer": "Did not do the activity"
                         }
                     ]
                 },
                 {
                     "questionId": "q1_2",
                     "question": "Walking one block on level ground",
+                    "answerType": "mixedType",
                     "questionAnswers": [
                         {
                             "answerValue": "1",
@@ -68,17 +70,18 @@
                         },
                         {
                             "answerValue": "0",
-                            "answer": "Limited  for  other  reasons"
+                            "answer": "Limited for other reasons"
                         },
                         {
                             "answerValue": "0#",
-                            "answer": "Did  not  do  the  activity"
+                            "answer": "Did not do the activity"
                         }
                     ]
                 },
                 {
                     "questionId": "q1_3",
                     "question": "Hurrying or jogging, as if to catch a bus",
+                    "answerType": "mixedType",
                     "questionAnswers": [
                         {
                             "answerValue": "1",
@@ -102,11 +105,11 @@
                         },
                         {
                             "answerValue": "0",
-                            "answer": "Limited  for  other  reasons"
+                            "answer": "Limited for other reasons"
                         },
                         {
                             "answerValue": "0#",
-                            "answer": "Did  not  do  the  activity"
+                            "answer": "Did not do the activity"
                         }
                     ]
                 }
@@ -114,12 +117,13 @@
         },
         {
             "questionId": "q2",
-            "question": "Second question: On  a  scale  from  one  to  five,  one  being  extremely  affected  and  five  being  not  at  affected  at  all,  please  indicate  over  the  past  two  week  how  much  does  your  heart  failure  affect  the  following  activities?    You  may  also  reply  does  not  apply  or  did  not  do  the  activity.  If  you  need  me  to  repeat  the  question,  say  repeat.",
+            "question": "Second question: On  a  scale  from  one  to  five,  one  being  extremely  affected  and  five  being  not  at  affected  at  all,  please  indicate  over  the  past  two  week  how  much  does  your  heart  failure  affect  the  following  activities?    You  may  also  reply  does  not  apply  or  did  not  do  the  activity.  If  you  need  me  to  repeat  the  question,  say  repeat. Say  answer questions, if you are ready now.",
             "questionReprompt": "Reprompt String",
             "surveyQuestions": [
                 {
                     "questionId": "q2_1",
                     "question": "Hobbies,  recreational  activities",
+                    "answerType": "mixedType",
                     "questionAnswers": [
                         {
                             "answerValue": "1",
@@ -143,17 +147,18 @@
                         },
                         {
                             "answerValue": "0",
-                            "answer": "Limited  for  other  reasons"
+                            "answer": "Limited for other reasons"
                         },
                         {
                             "answerValue": "0#",
-                            "answer": "Did  not  do  the  activity"
+                            "answer": "Did not do the activity"
                         }
                     ]
                 },
                 {
                     "questionId": "q2_2",
-                    "question": "Visiting  family  or  friends  out  of  your  home",
+                    "question": "Visiting family or friends out of your home",
+                    "answerType": "mixedType",
                     "questionAnswers": [
                         {
                             "answerValue": "1",
@@ -177,11 +182,11 @@
                         },
                         {
                             "answerValue": "0",
-                            "answer": "Limited  for  other  reasons"
+                            "answer": "Limited for other reasons"
                         },
                         {
                             "answerValue": "0#",
-                            "answer": "Did  not  do  the  activity"
+                            "answer": "Did not do the activity"
                         }
                     ]
                 }
@@ -191,26 +196,104 @@
             "questionId": "q3",
             "question": "Third Question. Over  the  past  two  weeks,  how  many  times  did  you  have  swelling  in  your  feet,  ankles  or  legs  when  you  woke  up  in  the  morning?  Please  select  from  one  of  the  following  choices:  Every  morning,  three  or  more  times  per  week  but  not  every  day,  one  to  two  times  per  week,  less  than  once  a  week,  or  never  over  the  past  two  weeks.  If  you  want  me  to  repeat  these  choices,  please  say  repeat.",
             "questionReprompt": "Reprompt String",
+            "answerType": "charType",
             "questionAnswers": [
                 {
                     "answerValue": "1",
-                    "answer": "Every  morning"
+                    "answer": "Every morning"
                 },
                 {
                     "answerValue": "2",
-                    "answer": "three  or  more  times  per  week  but  not  every  day"
+                    "answer": "three or more times per week but not every day"
                 },
                 {
                     "answerValue": "3",
-                    "answer": "one  to  two  times  per  week"
+                    "answer": "one to two times per week"
                 },
                 {
                     "answerValue": "4",
-                    "answer": "less  than  once  a  week"
+                    "answer": "less than once a week"
                 },
                 {
                     "answerValue": "5#",
-                    "answer": "never  over  the  past  2  weeks"
+                    "answer": "never over the past two weeks"
+                }
+            ]
+        },
+        {
+            "questionId": "q2",
+            "question": "Second question added: On  a  scale  from  one  to  five,  one  being  extremely  affected  and  five  being  not  at  affected  at  all,  please  indicate  over  the  past  two  week  how  much  does  your  heart  failure  affect  the  following  activities?    You  may  also  reply  does  not  apply  or  did  not  do  the  activity.  If  you  need  me  to  repeat  the  question,  say  repeat.",
+            "questionReprompt": "Reprompt String",
+            "surveyQuestions": [
+                {
+                    "questionId": "q2_1",
+                    "question": "Hobbies,  recreational  activities",
+                    "answerType": "mixedType",
+                    "questionAnswers": [
+                        {
+                            "answerValue": "1",
+                            "answer": "one"
+                        },
+                        {
+                            "answerValue": "2",
+                            "answer": "two"
+                        },
+                        {
+                            "answerValue": "3",
+                            "answer": "three"
+                        },
+                        {
+                            "answerValue": "4",
+                            "answer": "Four"
+                        },
+                        {
+                            "answerValue": "5",
+                            "answer": "Five"
+                        },
+                        {
+                            "answerValue": "0",
+                            "answer": "Limited for other reasons"
+                        },
+                        {
+                            "answerValue": "0#",
+                            "answer": "Did not do the activity"
+                        }
+                    ]
+                },
+                {
+                    "questionId": "q2_2",
+                    "question": "Visiting family or friends out of your home",
+                    "answerType": "mixedType",
+                    "questionAnswers": [
+                        {
+                            "answerValue": "1",
+                            "answer": "one"
+                        },
+                        {
+                            "answerValue": "2",
+                            "answer": "two"
+                        },
+                        {
+                            "answerValue": "3",
+                            "answer": "three"
+                        },
+                        {
+                            "answerValue": "4",
+                            "answer": "Four"
+                        },
+                        {
+                            "answerValue": "5",
+                            "answer": "Five"
+                        },
+                        {
+                            "answerValue": "0",
+                            "answer": "Limited for other reasons"
+                        },
+                        {
+                            "answerValue": "0#",
+                            "answer": "Did not do the activity"
+                        }
+                    ]
                 }
             ]
         },
@@ -218,30 +301,31 @@
             "questionId": "q4",
             "question": "Fourth Question. Over  the  past  two  weeks,  on  average,  how  many  times  has  fatigue  limited  your  ability  to  do  what  you  wanted?  Please  select  from  the  following  answers:  all  of  the  time,  several  times  per  day,  at  least  once  a  day,  three  or  more  times  per  week  but  not  every  day,  one  to  two  times  per  week,  less  than  once  a  week,  never  over  the  past  two  weeks.  If  you  want  me  to  repeat  the  options  please  say  repeat.",
             "questionReprompt": "Reprompt String",
+            "answerType": "charType2",
             "questionAnswers": [
                 {
                     "answerValue": "1",
-                    "answer": "all  of  the  time"
+                    "answer": "all of the time"
                 },
                 {
                     "answerValue": "2",
-                    "answer": "several  times  per  day"
+                    "answer": "several times per day"
                 },
                 {
                     "answerValue": "3",
-                    "answer": "at  least  once  a  day"
+                    "answer": "at least once a day"
                 },
                 {
                     "answerValue": "4",
-                    "answer": "three  or  more  times  per  week  but  not  every  day"
+                    "answer": "three or more times per week but not every day"
                 },
                 {
                     "answerValue": "5",
-                    "answer": "one  to  two  times  per  week"
+                    "answer": "one to two times per week"
                 },
                 {
                     "answerValue": "6#",
-                    "answer": "less  than  once  a  week"
+                    "answer": "less than once a week"
                 }
             ]
         },
@@ -249,30 +333,31 @@
             "questionId": "q5",
             "question": "Fifth Question. Over  the  past  2  weeks,  on  average,  how  many  times  has  shortness  of  breath  limited  your  ability  to  do  what  you  wanted?  Please  select  from  the  following  options:  all  of  the  time,  several  times  per  day,  at  least  once  a  day,  three  or  more  times  per  week  but  not  every  day,  one  to  two  times  per  week,  less  than  once  a  week,  never  over  the  past  two  weeks.  If  you  want  me  to  repeat  the  options  please  say  repeat.",
             "questionReprompt": "Reprompt String",
+            "answerType": "charType3",
             "questionAnswers": [
                 {
                     "answerValue": "1",
-                    "answer": "all  of  the  time"
+                    "answer": "all of the time"
                 },
                 {
                     "answerValue": "2",
-                    "answer": "several  times  per  day"
+                    "answer": "several times per day"
                 },
                 {
                     "answerValue": "3",
-                    "answer": "at  least  once  a  day"
+                    "answer": "at least once a day"
                 },
                 {
                     "answerValue": "4",
-                    "answer": "three  or  more  times  per  week  but  not  every  day"
+                    "answer": "three or more times per week but not every day"
                 },
                 {
                     "answerValue": "5",
-                    "answer": "one  to  two  times  per  week"
+                    "answer": "one to two times per week"
                 },
                 {
                     "answerValue": "6",
-                    "answer": "less  than  once  a  week"
+                    "answer": "less than once a week"
                 },
                 {
                     "answerValue": "7#",
@@ -284,6 +369,7 @@
             "questionId": "q6",
             "question": "Sixth Question. Over  the  past  two  weeks,  on  average,  how  many  times  have  you  been  forced  to  sleep  sitting  up  in  a  chair  or  with  at  least  three  pillows  to  prop  you  up  because  of  shortness  of  breath?  Please  select  from  the  following  options:  Every  night,  three  or  more  times  per  week  but  not  every  day,  one  to  two  times  per  week,  less  than  once  a  week,  never  over  the  past  two  weeks.  If  you  want  me  to  repeat  the  options  please  say  repeat",
             "questionReprompt": "Reprompt String",
+            "answerType": "charType4",
             "questionAnswers": [
                 {
                     "answerValue": "1",
@@ -303,7 +389,7 @@
                 },
                 {
                     "answerValue": "5#",
-                    "answer": "never  over  the  past  2  weeks"
+                    "answer": "never over the past 2 weeks"
                 }
             ]
         },
@@ -311,6 +397,7 @@
             "questionId": "q7",
             "question": "Seventh Question. From  a  scale  of  one  to  five  where  one  is  extremely  limited  and  five  is  not  limited,  over  the  past  two  weeks,  how  much  has  your  heart  failure  limited  your  enjoyment  of  life?  If  you  want  me  to  repeat  the  options  please  say  repeat",
             "questionReprompt": "Reprompt String",
+            "answerType": "numberType",
             "questionAnswers": [
                 {
                     "answerValue": "1",
@@ -338,6 +425,7 @@
             "questionId": "q8",
             "question": "From  a  scale  of  one  to  five  where  one  is  not  satisfied  and  five  is  completely  satisfied,  if  you  had  to  spend  the  rest  of  your  life  with  your  heart  failure  the  way  it  is  right  now,  how  would  you  feel  about  this?  If  you  want  me  to  repeat  the  options  please  say  repeat. ",
             "questionReprompt": "Reprompt String",
+            "answerType": "numberType",
             "questionAnswers": [
                 {
                     "answerValue": "1",
