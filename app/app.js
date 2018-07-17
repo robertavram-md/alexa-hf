@@ -34,8 +34,6 @@ app.setHandler({
         }
         if (survey !== undefined) {
 
-            // let { mainQuestionIndex, subQuestionIndex } = this.user().data;
-
             let speech, mainQuestion, subQuestion;
 
             if (this.user().data.mainQuestionIndex === undefined && this.user().data.subQuestionIndex === undefined) {
@@ -50,10 +48,10 @@ app.setHandler({
             } else {
 
                 try {
-                    // console.log("SURVEY HAS OWN PROPERTY: ", survey.surveyQuestions[this.user().data.mainQuestionIndex].hasOwnProperty('surveyQuestions'));
-                    if (survey.surveyQuestions[this.user().data.mainQuestionIndex].hasOwnProperty('surveyQuestions') !== false) {
 
-                        if (this.user().data.subQuestionIndex === survey.surveyQuestions[this.user().data.mainQuestionIndex].surveyQuestions.length) {
+                    if (survey.surveyQuestions[this.user().data.mainQuestionIndex].hasOwnProperty('surveyQuestions') !== false && this.user().data.prevIntent === true) {
+
+                        if (this.user().data.subQuestionIndex === survey.surveyQuestions[this.user().data.mainQuestionIndex].surveyQuestions.length ) {
                             console.log("When reset indexes to read main question")
                             this.user().data.subQuestionsFinished = true;
                             this.user().data.mainQuestionIndex++;
@@ -67,7 +65,6 @@ app.setHandler({
                 }
 
                 for (let i = this.user().data.mainQuestionIndex; i < survey.surveyQuestions.length; i++) {
-
 
                     if (survey.surveyQuestions[i].hasOwnProperty('surveyQuestions')) {
                         this.user().data.hardQuestion = true;
@@ -106,7 +103,7 @@ app.setHandler({
                                     } else {
                                         console.log("NOT DEFINED SUBQUESTION");
                                         if (this.user().data.simpleQueston !== true) {
-                                            this.user().data.mainQuestionIndex++;
+                                            this.user().data.subQuestionIndex++;
                                         }
 
                                         this.user().data.questionToRepeat = subQuestion;
@@ -118,21 +115,19 @@ app.setHandler({
 
                             } else if (this.user().data.prevIntent === false) {
                                 console.log("if null");
-                                // checkUserInput.call(this);
+                    
                                 mainQuestion = survey.surveyQuestions[i].question;
-
-                                // this.ask(mainQuestion);
 
                                 checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
 
                                     console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
                                     if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
-                                        // console.log("PREVSUBQUESTION: ", prevSubQuestion);
+                                   
                                         let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
                                         if (answerValue !== undefined) {
                                             console.log("SAVE ANSWER TO DB");
                                             console.log("answerValue :", answerValue);
-                                            // this.user().data.mainQuestionIndex++;
+                                
                                             this.ask(mainQuestion);
 
                                             this.user().data.questionToRepeat = mainQuestion;
@@ -162,10 +157,7 @@ app.setHandler({
 
                             } else {
                                 console.log("if no prev intent");
-                                // this.ask(mainQuestion);
-                                // delete this.user().data.subQuestionsFinished;
-
-                                // ******************
+              
                                 checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
 
                                     console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
@@ -175,7 +167,6 @@ app.setHandler({
                                         if (answerValue !== undefined) {
                                             console.log("SAVE ANSWER TO DB");
                                             console.log("answerValue :", answerValue);
-                                            // this.user().data.mainQuestionIndex++;
                                             this.ask(mainQuestion);
 
                                             this.user().data.questionToRepeat = mainQuestion;
@@ -269,9 +260,8 @@ app.setHandler({
         }
     },
     'ToAnswersIntent': function () {
-        // console.log("this: ", this.requestObj.request.intent.name);
         if (this.user().data.simpleQueston === true) {
-            this.ask("You can only answer with this variants: bla-bla-blah");
+            this.ask("You can only answer with this variants");
         } else if (this.user().data.hardQuestion === true) {
             this.user().data.prevIntent = true;
             this.toIntent('GetFirstSurveyIntent');
@@ -282,7 +272,6 @@ app.setHandler({
         this.ask(this.user().data.questionToRepeat);
     },
     'END': function () {
-        console.log("***********STOPPED***************");
         console.log("REASON: ", this.requestObj.request.reason);
         if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMPTS' && this.user().data.correctMainAnswer === false) {
             this.tell("Come later");
@@ -311,7 +300,12 @@ module.exports.app = app;
 
 
 function getQuestionAnswers(prevMainQuestion, prevSubQuestion) {
+    if(this.user().data.prevIntent === true && this.user().data.mainQuestionIndex > 0 ) {
+        prevMainQuestion +=1;
+    }
+
     if (survey.surveyQuestions[prevMainQuestion].hasOwnProperty('surveyQuestions') !== true) {
+        console.log("SIMPLE QUESTION");
         let answerType = survey.surveyQuestions[prevMainQuestion].answerType;
 
         let answersStringToRead = [];
@@ -323,6 +317,7 @@ function getQuestionAnswers(prevMainQuestion, prevSubQuestion) {
             return answersStringToRead;
         }
     } else {
+        console.log("HARD QUESTION");
         let answerType = survey.surveyQuestions[prevMainQuestion].surveyQuestions[prevSubQuestion].answerType;
 
         let answersStringToRead = [];
@@ -339,7 +334,9 @@ function getQuestionAnswers(prevMainQuestion, prevSubQuestion) {
 
 
 function compareUserInputAndAnswer(prevMainQuestion, prevSubQuestion, inputs) {
-
+    if(this.user().data.prevIntent === true && this.user().data.mainQuestionIndex > 0 ) {
+        prevMainQuestion +=1;
+    }
     if (survey.surveyQuestions[prevMainQuestion].hasOwnProperty('surveyQuestions') !== true) {
         let answerType = survey.surveyQuestions[prevMainQuestion].answerType;
         console.log("ANSWER_TYPE :", answerType);
@@ -397,7 +394,7 @@ function checkUserInput(callback) {
     } else {
         prevSubQuestion = this.user().data.subQuestionIndex - 1;
     }
-    
+
     let inputs = this.getInputs();
     if (Object.keys(inputs).length > 0) {
         console.log("slots here");

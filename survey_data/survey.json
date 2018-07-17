@@ -2,24 +2,6 @@
     "surveyId": "s1",
     "surveyName": "Heart Failure",
     "surveyQuestions": [
-        
-        {
-            "questionId": "q0_",
-            "question": "Second question NEW !!!: On  a  scale  from  one  to  five,  one  being  extremely  affected  and  five  being  not  at  affected  at  all,  please  indicate  over  the  past  two  week  how  much  does  your  heart  failure  affect  the  following  activities?    You  may  also  reply  does  not  apply  or  did  not  do  the  activity.  If  you  need  me  to  repeat  the  question,  say  repeat. Say  answer questions, if you are ready now.",
-            "questionReprompt": "Reprompt String",
-            "surveyQuestions": [
-                {
-                    "questionId": "q2_1",
-                    "question": "Hobbies,  recreational  activities",
-                    "answerType": "mixedType"
-                },
-                {
-                    "questionId": "q2_2",
-                    "question": "Visiting family or friends out of your home",
-                    "answerType": "mixedType"
-                }
-            ]
-        },
         {
             "questionId": "q3",
             "question": "Third Question added!  Over  the  past  two  weeks,  how  many  times  did  you  have  swelling  in  your  feet,  ankles  or  legs  when  you  woke  up  in  the  morning?  Please  select  from  one  of  the  following  choices:  Every  morning,  three  or  more  times  per  week  but  not  every  day,  one  to  two  times  per  week,  less  than  once  a  week,  or  never  over  the  past  two  weeks.  If  you  want  me  to  repeat  these  choices,  please  say  repeat.",
