@@ -14,7 +14,7 @@ const config = {
 
 const app = new App(config);
 const survey = require('../survey_data/survey.json');
-const { mixedType, charType, charType2, charType3, charType4, numberType } = require('./questionTypes.js');
+const questionTypes = require('./questionTypes');
 
 // =================================================================================
 // App Logic
@@ -25,8 +25,7 @@ app.setHandler({
         this.toIntent('GetFirstSurveyIntent');
     },
     'GetFirstSurveyIntent': function () {
-        let inputs = this.getInputs();
-        console.log("INPUTS: ", inputs);
+
         if (this.user().data.mainQuestionIndex <= -1) {
             this.user().data.mainQuestionIndex = 0;
         }
@@ -35,7 +34,7 @@ app.setHandler({
         }
         if (survey !== undefined) {
 
-
+            // let { mainQuestionIndex, subQuestionIndex } = this.user().data;
 
             let speech, mainQuestion, subQuestion;
 
@@ -51,13 +50,18 @@ app.setHandler({
             } else {
 
                 try {
-                    if (this.user().data.subQuestionIndex === survey.surveyQuestions[this.user().data.mainQuestionIndex].surveyQuestions.length) {
-                        console.log("When reset indexes to read main question")
-                        this.user().data.subQuestionsFinished = true;
-                        this.user().data.mainQuestionIndex++;
-                        this.user().data.subQuestionIndex = 0;
-                        this.user().data.prevIntent = false;
+                    // console.log("SURVEY HAS OWN PROPERTY: ", survey.surveyQuestions[this.user().data.mainQuestionIndex].hasOwnProperty('surveyQuestions'));
+                    if (survey.surveyQuestions[this.user().data.mainQuestionIndex].hasOwnProperty('surveyQuestions') !== false) {
+
+                        if (this.user().data.subQuestionIndex === survey.surveyQuestions[this.user().data.mainQuestionIndex].surveyQuestions.length) {
+                            console.log("When reset indexes to read main question")
+                            this.user().data.subQuestionsFinished = true;
+                            this.user().data.mainQuestionIndex++;
+                            this.user().data.subQuestionIndex = 0;
+                            this.user().data.prevIntent = false;
+                        }
                     }
+
                 } catch (error) {
                     console.log("try_catch error: ", error);
                 }
@@ -77,7 +81,14 @@ app.setHandler({
                             if (this.user().data.prevIntent === true) {
 
                                 console.log("Time to read sub question")
-                                // checkUserInput.call(this);
+                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
+                                        console.log("SUBQUESTIONS VALIDATION");
+                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+
+                                    }
+
+                                })
                                 this.ask(subQuestion);
                                 this.user().data.subQuestionIndex++;
 
@@ -86,14 +97,77 @@ app.setHandler({
                                 // checkUserInput.call(this);
                                 mainQuestion = survey.surveyQuestions[i].question;
 
-                                this.ask(mainQuestion);
+                                // this.ask(mainQuestion);
+
+                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+
+                                    console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
+                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
+                                        // console.log("PREVSUBQUESTION: ", prevSubQuestion);
+                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                        if (answerValue !== undefined) {
+                                            console.log("SAVE ANSWER TO DB");
+                                            console.log("answerValue :", answerValue);
+                                            // this.user().data.mainQuestionIndex++;
+                                            this.ask(`${mainQuestion}`);
+                                            this.user().data.correctMainAnswer = true;
+                                            delete this.user().data.subQuestionsFinished;
+                                        } else {
+                                            let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                            if (valuesToRead !== undefined) {
+                                                console.log("VALUES TO READ :", valuesToRead);
+                                                this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                                this.user().data.correctMainAnswer = false;
+                                            }
+
+                                        }
+                                    } else {
+                                        console.log("NOT DEFINED");
+                                        if (this.user().data.hardQuestion !== true) {
+                                            this.user().data.mainQuestionIndex++;
+                                        }
+                                        this.ask(`${mainQuestion}`);
+                                    }
+
+                                });
 
                             } else {
                                 console.log("if no prev intent");
+                                // this.ask(mainQuestion);
+                                // delete this.user().data.subQuestionsFinished;
 
-                                this.ask(mainQuestion);
-                                delete this.user().data.subQuestionsFinished;
+                                // ******************
+                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
 
+                                    console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
+                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
+                                        // console.log("PREVSUBQUESTION: ", prevSubQuestion);
+                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                        if (answerValue !== undefined) {
+                                            console.log("SAVE ANSWER TO DB");
+                                            console.log("answerValue :", answerValue);
+                                            // this.user().data.mainQuestionIndex++;
+                                            this.ask(`${mainQuestion}`);
+                                            this.user().data.correctMainAnswer = true;
+                                            delete this.user().data.subQuestionsFinished;
+                                        } else {
+                                            let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                            if (valuesToRead !== undefined) {
+                                                console.log("VALUES TO READ :", valuesToRead);
+                                                this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                                this.user().data.correctMainAnswer = false;
+                                            }
+
+                                        }
+                                    } else {
+                                        console.log("NOT DEFINED");
+                                        if (this.user().data.hardQuestion !== true) {
+                                            this.user().data.mainQuestionIndex++;
+                                        }
+                                        this.ask(`${mainQuestion}`);
+                                    }
+
+                                });
                             }
 
                             break;
@@ -101,25 +175,54 @@ app.setHandler({
                         break;
                     }
                     else {
-
                         this.user().data.simpleQueston = true;
                         delete this.user().data.hardQuestion;
 
+                        delete this.user().data.subQuestionsFinished;
 
                         if (survey.surveyQuestions[i] !== undefined) {
-
                             console.log("this.user().data.simpleQueston = true");
                             mainQuestion = survey.surveyQuestions[i].question;
-                            this.user().data.mainQuestionIndex++;
-                            this.ask(`${mainQuestion}`);
+
+                            checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+
+                                console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
+                                if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
+                                    console.log("PREVSUBQUESTION: ", prevSubQuestion);
+                                    let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                    if (answerValue !== undefined) {
+                                        console.log("SAVE ANSWER TO DB");
+                                        console.log("answerValue :", answerValue);
+
+                                        this.user().data.mainQuestionIndex++;
 
 
+                                        this.user().data.correctMainAnswer = true;
+                                        this.ask(`${mainQuestion}`);
+                                    } else {
+                                        let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                        if (valuesToRead !== undefined) {
+                                            console.log("VALUES TO READ :", valuesToRead);
+                                            this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                            this.user().data.correctMainAnswer = false;
+                                        }
+
+                                    }
+                                } else {
+                                    console.log("NOT DEFINED simpleQuestion");
+                                    if (this.user().data.subQuestionsFinished === undefined) {
+                                        console.log("this.user().data.hardQuestion !== true")
+                                        this.user().data.mainQuestionIndex++;
+                                    }
+                                    this.ask(`${mainQuestion}`);
+                                }
+
+                            });
                         }
                         else {
                             this.tell("Survey finished");
                             this.user().data = {};
                         }
-                        // }
 
                         break;
                     }
@@ -143,9 +246,15 @@ app.setHandler({
     'END': function () {
         console.log("***********STOPPED***************");
         console.log("REASON: ", this.requestObj.request.reason);
-        if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMPTS') {
+        if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMPTS' && this.user().data.correctMainAnswer === false) {
+            this.tell("Come later");
+            this.user().data.mainQuestionIndex--;
+            delete this.user().data.correctMainAnswer;
+
+        } else if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMTS' && this.user().data.correctSubAnswer === false) {
             this.tell("Come later");
             this.user().data.subQuestionIndex--;
+            delete this.user().data.correctSubAnswer;
         } else {
             if (this.user().data.hardQuestion === true && this.user().data.prevIntent === true) {
                 this.user().data.subQuestionIndex--;
@@ -161,13 +270,72 @@ app.setHandler({
 
 module.exports.app = app;
 
-function getQuestionAnswers() {
 
+
+function getQuestionAnswers(prevMainQuestion, prevSubQuestion) {
+    if (survey.surveyQuestions[prevMainQuestion].hasOwnProperty('surveyQuestions') !== true) {
+        let answers = survey.surveyQuestions[prevMainQuestion].questionAnswers;
+        let answersStringToRead = [];
+        for (let m = 0; m < answers.length; m++) {
+            answersStringToRead.push(answers[m].answer);
+        }
+        if (answersStringToRead.length > 0) {
+            return answersStringToRead;
+        }
+    }
 }
 
 
+function compareUserInputAndAnswer(prevMainQuestion, prevSubQuestion, inputs) {
+    // if (prevMainQuestion && prevSubQuestion && slots) {
+    console.log("ARGS :compareUserInputAndAnswer :  ", prevMainQuestion, prevSubQuestion, inputs)
+    if (survey.surveyQuestions[prevMainQuestion].hasOwnProperty('surveyQuestions') !== true) {
+        let answerType = survey.surveyQuestions[prevMainQuestion].answerType;
+        console.log("ANSWER_TYPE :", answerType);
+        if (answerType !== undefined) {
+            // getQuestionAnswers.call(this, answerType);
+            // console.log("INPUTS: ", inputs);
+            for (let n = 0; n < questionTypes[answerType].length; n++) {
+                // console.log("n:", questionTypes[answerType][n]);
+                console.log("comparingValues : ", questionTypes[answerType][n].answer.toLowerCase(), "/", inputs['customAnswer'].key.toLowerCase());
+                let answerValues = [];
+                if (questionTypes[answerType][n].answer.toLowerCase() === inputs['customAnswer'].key.toLowerCase()) {
+                    console.log("inputs['customAnswer'].key.toLowerCase() :", questionTypes[answerType][n].answer);
+                    let questionAndAnswerObj = {
+                        question: survey.surveyQuestions[prevMainQuestion].questionId,
+                        answer: questionTypes[answerType][n].answerValue
+                    }
+                    return questionAndAnswerObj;
+                    break;
+                }
+            }
+        } else {
+            console.log("compareUserInputAndAnswer");
+        }
+    } else {
+        let answerType = survey.surveyQuestions[prevMainQuestion].surveyQuestions[prevSubQuestion].answerType;
+        console.log("WHERE UNDEFINED: ", answerType);
+        for (let n = 0; n < questionTypes[answerType].length; n++) {
+            // console.log("n:", questionTypes[answerType][n]);
+            console.log("comparingValues : ", questionTypes[answerType][n].answer.toLowerCase(), "/", inputs['customAnswer'].key.toLowerCase());
+            let answerValues = [];
+            if (questionTypes[answerType][n].answer.toLowerCase() === inputs['customAnswer'].key.toLowerCase()) {
+                console.log("inputs['customAnswer'].key.toLowerCase() :", questionTypes[answerType][n].answer);
+                let questionAndAnswerObj = {
+                    question: survey.surveyQuestions[prevMainQuestion].questionId,
+                    answer: questionTypes[answerType][n].answerValue
+                }
+                return questionAndAnswerObj;
+                break;
+            }
+        }
+        // return undefined;
+    }
+    // }
+}
 
-function checkUserInput() {
+function checkUserInput(callback) {
+    // return 'matched';
     let prevMainQuestion, prevSubQuestion;
     if (this.user().data.mainQuestionIndex === 0) {
         prevMainQuestion = 0;
@@ -177,44 +345,17 @@ function checkUserInput() {
 
     if (this.user().data.subQuestionIndex === 0) {
         prevSubQuestion = 0;
-        console.log("if subqindex === 0 : ", this.user().data.subQuestionIndex);
     } else {
         prevSubQuestion = this.user().data.subQuestionIndex - 1;
-        console.log("if subqindex !== 0 : ", this.user().data.subQuestionIndex);
     }
-
     let inputs = this.getInputs();
-    console.log("slot: ", inputs);
-    if (Object.keys(inputs).length > 0 && (inputs['customAnswer'].value !== undefined)) {
-        if (!survey.surveyQuestions[prevMainQuestion].hasOwnProperty('surveyQuestions')) {
-            let arr = survey.surveyQuestions[prevMainQuestion].questionAnswers;
-            // console.log("arr: ", arr);
-
-            console.log("ARR.LENGTH: ", arr.length)
-            for (let i = 0; i < arr.length; i++) {
-                console.log("I: , ", i);
-                try {
-                    if (inputs['customAnswer'].value !== undefined && inputs['customAnswer'].value !== '?') {
-
-                        console.log("customAnswerHere ", inputs['customAnswer'].value);
-                        // console.log("ARR[ELEMENT]: ", element);
-                        if (inputs['customAnswer'].value.toLowerCase() === arr[i].answer.toLowerCase()) {
-                            console.log("MATCHED");
-                            return 'matched';
-                            break;
-
-                        } else {
-                            // console.log("NOT MATCHED");
-                            return 'not matched';
-                        }
-                    }
-                } catch (error) {
-                    console.log("error: ", error);
-                }
-            }
-        }
+    if (Object.keys(inputs).length > 0) {
+        console.log("slots here");
+        callback(prevMainQuestion, prevSubQuestion, inputs);
+    } else {
+        console.log("there is no slots here");
+        callback();
     }
-
 }
 
 let a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];

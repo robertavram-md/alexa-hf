@@ -48,7 +48,7 @@ module.exports.charType = [
     },
     {
         "answerValue": "5#",
-        "answer": "never over the past 2 weeks"
+        "answer": "never over the past two weeks"
     }
 ];
 
@@ -129,7 +129,7 @@ module.exports.charType4 = [
     },
     {
         "answerValue": "5#",
-        "answer": "never over the past 2 weeks"
+        "answer": "never over the past two weeks"
     }
 ];
 
