@@ -4,7 +4,9 @@
   "description": "Alexa HF skill",
   "main": "index.js",
   "dependencies": {
-    "jovo-framework": "^1.3.1"
+    "jovo-framework": "^1.3.1",
+    "request": "^2.87.0",
+    "sync-request": "^6.0.0"
   },
   "devDependencies": {},
   "scripts": {
