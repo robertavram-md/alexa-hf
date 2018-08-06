@@ -23,7 +23,7 @@ r.getAnswersData().then(data => {
 function handler() {
     app.setHandler({
         'LAUNCH': async function () {
-            if(this.user().data.surveyFinished === true || this.user().data.surveyFinished === undefined) {
+            if (this.user().data.surveyFinished === true || this.user().data.surveyFinished === undefined) {
                 await r.getSurveyQuestions().then(result => {
                     this.user().data.survey = result;
                 });
@@ -117,7 +117,7 @@ function handler() {
                                     }
                                 })
                             } else if (this.user().data.prevIntent === false) {
-                                console.log("if null");
+                                console.log("if null21");
                                 mainQuestion = survey[i].text;
                                 checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
                                     console.log("ARGUMENTS: ", prevMainQuestion, "/", prevSubQuestion, "/", inputs);
@@ -135,7 +135,7 @@ function handler() {
                                             r.sendUserAnswers(userAnswer).then(data => {
                                                 console.log("sended: ", data);
                                             })
-                                            if (this.user().data.changeIndex === true) {  
+                                            if (this.user().data.changeIndex === true) {
                                                 this.user().data = {};
                                                 this.user().data.surveyFinished = true;
                                                 this.tell("survey finished, thank you for your answer!!!");
@@ -217,7 +217,7 @@ function handler() {
                         console.log("SURVEY SIMPLE QUESTION");
                         this.user().data.simpleQueston = true;
                         delete this.user().data.hardQuestion;
-                        delete this.user().data.subQuestionsFinished;
+
                         if (survey[i] !== undefined) {
                             console.log("this.user().data.simpleQueston = true");
                             mainQuestion = survey[i].text;
@@ -226,6 +226,7 @@ function handler() {
                                 if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
                                     console.log("PREVSUBQUESTION: ", prevSubQuestion);
                                     let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                    delete this.user().data.subQuestionsFinished;
                                     if (answerValue !== undefined) {
                                         console.log("SAVE ANSWER TO DB");
                                         console.log("answerValue :", answerValue);
@@ -395,16 +396,28 @@ function compareUserInputAndAnswer(prevMainQuestion, prevSubQuestion, inputs) {
     if (this.user().data.prevIntent === true && this.user().data.mainQuestionIndex > 0) {
         prevMainQuestion += 1;
     } else if (this.user().data.changeIndex === true) {
+        console.log("else if (this.user().data.changeIndex === true)")
         prevMainQuestion += 1;
     }
 
-    console.log("COMPARING VALUES :", prevMainQuestion)
+    console.log("COMPARING VALUES, prevMainQuestion :", prevMainQuestion);
     try {
+        console.log("THIS.USER().DATA.SUBQUESTIONSFINISHED: ", this.user().data.subQuestionsFinished);
+        if (this.user().data.changeIndex === true || this.user().data.subQuestionsFinished === true) {
+            prevSubQuestion = survey[prevMainQuestion].surveyQuestions.length - 1;
+            console.log("otrabotalo AHAHHAHAHAHAHAHHAHAHHA")
+        }
         if (survey[prevMainQuestion].surveyQuestions.length > 0) {
             let answerType = survey[prevMainQuestion].answerTypeName;
-            console.log("ANSWER_TYPE :", answerType);
+            console.log("ANSWER_TYPE  hardQuestion:", answerType);
+            console.log("A_T,:", prevSubQuestion);
+
             console.log("ansd;a: ", survey[prevMainQuestion].surveyQuestions[prevSubQuestion].id);
+
             if (answerType !== undefined) {
+
+                console.log("A_T AFTER:,:", prevSubQuestion);
+
                 let answerTypeId = getAnswerTypeId(answerType);
                 let answersArr = getAnswersListById(answerTypeId);
                 for (let n = 0; n < answersArr.length; n++) {
@@ -420,7 +433,8 @@ function compareUserInputAndAnswer(prevMainQuestion, prevSubQuestion, inputs) {
             }
         } else {
             let answerType = survey[prevMainQuestion].answerTypeName;
-            console.log("WHERE UNDEFINED: ", answerType);
+            console.log("WHERE UNDEFINED simpleQuestions: ", answerType);
+            console.log("wU prevSubQuestion: ", prevSubQuestion);
             if (answerType !== undefined) {
                 let answerTypeId = getAnswerTypeId(answerType);
                 let answersArr = getAnswersListById(answerTypeId);
@@ -457,6 +471,7 @@ function checkUserInput(callback) {
     } else {
         prevSubQuestion = this.user().data.subQuestionIndex - 1;
     }
+
 
     let inputs = this.getInputs();
     if (Object.keys(inputs).length > 0) {
