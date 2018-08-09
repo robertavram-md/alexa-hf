@@ -1,229 +1,126 @@
 'use strict';
 
 const { App } = require('jovo-framework');
-// const fs = require('fs');
+const fs = require('fs');
+const crypto = require('crypto');
+const DataRequests = require('./api/apiData');
+const data = require('../data.json');
+const r = new DataRequests();
+
 const config = {
     logging: true,
 };
-
 const app = new App(config);
-const DataRequests = require('./api/apiData');
-const r = new DataRequests();
-const crypto = require('crypto');
-let answerTypes, answers;
 
+let answerTypes = data.answerTypes[0];
+let answers = data.answers[0];
+const CronJob = require('cron').CronJob;
+new CronJob('0 0 * * *', () => {
+    r.getAnswersData().then(data => {
+        let obj = {
+            answerTypes: [],
+            answers: []
+        }
+        obj.answerTypes.push(JSON.parse(data[0]))
+        obj.answers.push(JSON.parse(data[1]))
+        let json = JSON.stringify(obj);
+        fs.writeFile('data.json', json, 'utf-8', (err) => {
+            if (err) console.log("err: ", err);
+            console.log("saved");
+        });
+    });
+}, null, true, null);
 
-r.getAnswersData().then(data => {
-    answerTypes = JSON.parse(data[0]);
-    answers = JSON.parse(data[1]);
-}).then(d => {
-    handler();
-})
-
-function handler() {
-    app.setHandler({
-        'LAUNCH': async function () {
-            if (this.user().data.surveyFinished === true || this.user().data.surveyFinished === undefined) {
-                await r.getSurveyQuestions().then(result => {
-                    this.user().data.survey = result;
-                });
-                delete this.user().data.surveyFinished;
-            }
-            this.toIntent('GetFirstSurveyIntent');
-        },
-        'GetFirstSurveyIntent': function () {
-            const { survey } = this.user().data;
-            if (this.user().data.mainQuestionIndex <= -1) {
+app.setHandler({
+    'LAUNCH': async function () {
+        if (this.user().data.surveyFinished === true || this.user().data.surveyFinished === undefined) {
+            await r.getSurveyQuestions().then(result => {
+                this.user().data.survey = result;
+            });
+            delete this.user().data.surveyFinished;
+        }
+        this.toIntent('GetFirstSurveyIntent');
+    },
+    'GetFirstSurveyIntent': function () {
+        const { survey } = this.user().data;
+        if (this.user().data.mainQuestionIndex <= -1) {
+            this.user().data.mainQuestionIndex = 0;
+        }
+        if (this.user().data.subQuestionIndex <= -1) {
+            this.user().data.subQuestionIndex = 0;
+        }
+        if (survey !== undefined) {
+            let speech, mainQuestion, subQuestion;
+            if (this.user().data.mainQuestionIndex === undefined && this.user().data.subQuestionIndex === undefined) {
                 this.user().data.mainQuestionIndex = 0;
-            }
-            if (this.user().data.subQuestionIndex <= -1) {
                 this.user().data.subQuestionIndex = 0;
+                this.user().data.prevIntent;
             }
-            if (survey !== undefined) {
-                let speech, mainQuestion, subQuestion;
-                if (this.user().data.mainQuestionIndex === undefined && this.user().data.subQuestionIndex === undefined) {
-                    this.user().data.mainQuestionIndex = 0;
-                    this.user().data.subQuestionIndex = 0;
-                    this.user().data.prevIntent;
-                }
-                
-                try {
-                    if (survey[this.user().data.mainQuestionIndex].surveyQuestions.length > 0 && this.user().data.prevIntent === true) {
-                        if (this.user().data.subQuestionIndex === survey[this.user().data.mainQuestionIndex].surveyQuestions.length) {
-                            this.user().data.subQuestionsFinished = true;
-                            this.user().data.mainQuestionIndex++;
-                            this.user().data.subQuestionIndex = 0;
-                            this.user().data.prevIntent = false;
-                            if (this.user().data.mainQuestionIndex === survey.length) {
-                                this.user().data.changeIndex = true;
-                            }
+
+            try {
+                if (survey[this.user().data.mainQuestionIndex].surveyQuestions.length > 0 && this.user().data.prevIntent === true) {
+                    if (this.user().data.subQuestionIndex === survey[this.user().data.mainQuestionIndex].surveyQuestions.length) {
+                        this.user().data.subQuestionsFinished = true;
+                        this.user().data.mainQuestionIndex++;
+                        this.user().data.subQuestionIndex = 0;
+                        this.user().data.prevIntent = false;
+                        if (this.user().data.mainQuestionIndex === survey.length) {
+                            this.user().data.changeIndex = true;
                         }
                     }
-                } catch (error) {
-                    console.log("try_catch error: ", error);
                 }
-                if (this.user().data.changeIndex === true) {
-                    this.user().data.mainQuestionIndex--;
-                }
-                for (let i = this.user().data.mainQuestionIndex; i < survey.length; i++) {
-                    if (survey[i].surveyQuestions.length > 0) {
-                        this.user().data.hardQuestion = true;
-                        delete this.user().data.simpleQueston;
-                        for (let j = this.user().data.subQuestionIndex; j < survey[i].surveyQuestions.length; j++) {
-                            subQuestion = survey[i].surveyQuestions[j].text;
-                            mainQuestion = survey[i].text;
-                            if (this.user().data.prevIntent === true) {
-                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
-                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
-                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
-                                        if (answerValue !== undefined) {
-                                            let userAnswer = {
-                                                questionId: answerValue.question,
-                                                answerId: answerValue.answerId,
-                                                userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                device: this.alexaSkill().getDeviceId()
-                                            }
-                                            r.sendUserAnswers(userAnswer).then(data => {
-                                                console.log("sended: ", data);
-                                            })
-                                            this.ask(subQuestion);
-                                            this.user().data.questionToRepeat = subQuestion;
-                                            this.user().data.subQuestionIndex++;
-                                            this.user().data.correctSubAnswer = true;
-                                        } else {
-                                            let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
-                                            if (valuesToRead !== undefined) {
-                                                this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
-                                                this.user().data.correctSubAnswer = false;
-                                            }
-                                        }
-                                    } else {
-                                        if (this.user().data.simpleQueston !== true) {
-                                            this.user().data.subQuestionIndex++;
-                                        }
-                                        this.user().data.questionToRepeat = subQuestion;
-                                        this.ask(subQuestion);
-                                    }
-                                })
-                            } else if (this.user().data.prevIntent === false) {
-                                mainQuestion = survey[i].text;
-                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
-                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
-                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
-                                        if (answerValue !== undefined) {
-                                            
-                                            if (this.user().data.changeIndex === true) {
-                                                this.user().data = {};
-                                                this.user().data.surveyFinished = true;
-                                                let userAnswer = {
-                                                    questionId: answerValue.question,
-                                                    answerId: answerValue.answerId,
-                                                    userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                    device: this.alexaSkill().getDeviceId(),
-                                                    isCompleted: true
-                                                }
-                                                r.sendUserAnswers(userAnswer).then(data => {
-                                                    console.log("finished :", data);
-                                                })
-                                                this.tell("survey finished, thank you for your answer!!!");
-                                                return false;
-                                            } else {
-                                                let userAnswer = {
-                                                    questionId: answerValue.question,
-                                                    answerId: answerValue.answerId,
-                                                    userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                    device: this.alexaSkill().getDeviceId()
-                                                }
-                                                r.sendUserAnswers(userAnswer).then(data => {
-                                                    console.log("sended: ", data);
-                                                })
-                                            }
-                                            this.ask(mainQuestion);
-                                            this.user().data.questionToRepeat = mainQuestion;
-                                            this.user().data.correctMainAnswer = true;
-                                            delete this.user().data.subQuestionsFinished;
-                                        } else {
-                                            let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
-                                            if (valuesToRead !== undefined) {
-                                                this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
-                                                this.user().data.correctMainAnswer = false;
-                                            }
-                                        }
-                                    } else {
-                                        if (this.user().data.hardQuestion !== true) {
-                                            this.user().data.mainQuestionIndex++;
-                                        }
-                                        this.ask(mainQuestion);
-                                        this.user().data.questionToRepeat = mainQuestion;
-                                    }
-                                });
-                            } else {
-                                checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
-                                    if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
-                                        let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
-                                        if (answerValue !== undefined) {
-                                           
-                                            if (this.user().data.changeIndex === true) {
-                                                this.user().data = {};
-                                                this.user().data.surveyFinished = true;
-                                                let userAnswer = {
-                                                    questionId: answerValue.question,
-                                                    answerId: answerValue.answerId,
-                                                    userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                    device: this.alexaSkill().getDeviceId(),
-                                                    isCompleted: true
-                                                }
-                                                r.sendUserAnswers(userAnswer).then(data => {
-                                                    console.log("finished :", data);
-                                                })
-                                                this.tell("survey finished, thank you for your answer!!!");
-                                                return false;
-                                            } else {
-                                                let userAnswer = {
-                                                    questionId: answerValue.question,
-                                                    answerId: answerValue.answerId,
-                                                    userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                    device: this.alexaSkill().getDeviceId()
-                                                }
-                                                r.sendUserAnswers(userAnswer).then(data => {
-                                                    console.log("sended:", data);
-                                                })
-                                            }
-                                            this.ask(mainQuestion);
-                                            this.user().data.questionToRepeat = mainQuestion;
-                                            this.user().data.correctMainAnswer = true;
-                                            delete this.user().data.subQuestionsFinished;
-                                        } else {
-                                            let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
-                                            if (valuesToRead !== undefined) {
-                                                this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
-                                                this.user().data.correctMainAnswer = false;
-                                            }
-                                        }
-                                    } else {
-                                        if (this.user().data.hardQuestion !== true) {
-                                            this.user().data.mainQuestionIndex++;
-                                        }
-                                        this.ask(mainQuestion);
-                                        this.user().data.questionToRepeat = mainQuestion;
-                                    }
-                                });
-                            }
-                            break;
-                        }
-                        break;
-                    }
-                    else {
-                        this.user().data.simpleQueston = true;
-                        delete this.user().data.hardQuestion;
-                        if (survey[i] !== undefined) {
-                            mainQuestion = survey[i].text;
+            } catch (error) {
+                console.log("try_catch error: ", error);
+            }
+            if (this.user().data.changeIndex === true) {
+                this.user().data.mainQuestionIndex--;
+            }
+            for (let i = this.user().data.mainQuestionIndex; i < survey.length; i++) {
+                if (survey[i].surveyQuestions.length > 0) {
+                    this.user().data.hardQuestion = true;
+                    delete this.user().data.simpleQueston;
+                    for (let j = this.user().data.subQuestionIndex; j < survey[i].surveyQuestions.length; j++) {
+                        subQuestion = survey[i].surveyQuestions[j].text;
+                        mainQuestion = survey[i].text;
+                        if (this.user().data.prevIntent === true) {
                             checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
                                 if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
                                     let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
-                                    delete this.user().data.subQuestionsFinished;
                                     if (answerValue !== undefined) {
-                                        
+                                        let userAnswer = {
+                                            questionId: answerValue.question,
+                                            answerId: answerValue.answerId,
+                                            userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
+                                            device: this.alexaSkill().getDeviceId()
+                                        }
+                                        r.sendUserAnswers(userAnswer).then(data => {
+                                            console.log("sended: ", data);
+                                        })
+                                        this.ask(subQuestion);
+                                        this.user().data.questionToRepeat = subQuestion;
+                                        this.user().data.subQuestionIndex++;
+                                        this.user().data.correctSubAnswer = true;
+                                    } else {
+                                        let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                        if (valuesToRead !== undefined) {
+                                            this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                            this.user().data.correctSubAnswer = false;
+                                        }
+                                    }
+                                } else {
+                                    if (this.user().data.simpleQueston !== true) {
+                                        this.user().data.subQuestionIndex++;
+                                    }
+                                    this.user().data.questionToRepeat = subQuestion;
+                                    this.ask(subQuestion);
+                                }
+                            })
+                        } else if (this.user().data.prevIntent === false) {
+                            mainQuestion = survey[i].text;
+                            checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+                                if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
+                                    let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                    if (answerValue !== undefined) {
 
                                         if (this.user().data.changeIndex === true) {
                                             this.user().data = {};
@@ -248,79 +145,191 @@ function handler() {
                                                 device: this.alexaSkill().getDeviceId()
                                             }
                                             r.sendUserAnswers(userAnswer).then(data => {
-                                                console.log("sended", data);
-                                            });
+                                                console.log("sended: ", data);
+                                            })
                                         }
-                                        this.user().data.mainQuestionIndex++;
-                                        this.user().data.correctMainAnswer = true;
                                         this.ask(mainQuestion);
-                                        if (this.user().data.mainQuestionIndex === survey.length) {
-                                            this.user().data.changeIndex = true;
-                                        }
                                         this.user().data.questionToRepeat = mainQuestion;
+                                        this.user().data.correctMainAnswer = true;
+                                        delete this.user().data.subQuestionsFinished;
                                     } else {
                                         let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
                                         if (valuesToRead !== undefined) {
                                             this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
                                             this.user().data.correctMainAnswer = false;
                                         }
-
                                     }
                                 } else {
-                                    if (this.user().data.subQuestionsFinished === undefined) {
+                                    if (this.user().data.hardQuestion !== true) {
                                         this.user().data.mainQuestionIndex++;
-                                        if (this.user().data.mainQuestionIndex === survey.length) {
-                                            this.user().data.changeIndex = true;
+                                    }
+                                    this.ask(mainQuestion);
+                                    this.user().data.questionToRepeat = mainQuestion;
+                                }
+                            });
+                        } else {
+                            checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+                                if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
+                                    let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                    if (answerValue !== undefined) {
+
+                                        if (this.user().data.changeIndex === true) {
+                                            this.user().data = {};
+                                            this.user().data.surveyFinished = true;
+                                            let userAnswer = {
+                                                questionId: answerValue.question,
+                                                answerId: answerValue.answerId,
+                                                userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
+                                                device: this.alexaSkill().getDeviceId(),
+                                                isCompleted: true
+                                            }
+                                            r.sendUserAnswers(userAnswer).then(data => {
+                                                console.log("finished :", data);
+                                            })
+                                            this.tell("survey finished, thank you for your answer!!!");
+                                            return false;
+                                        } else {
+                                            let userAnswer = {
+                                                questionId: answerValue.question,
+                                                answerId: answerValue.answerId,
+                                                userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
+                                                device: this.alexaSkill().getDeviceId()
+                                            }
+                                            r.sendUserAnswers(userAnswer).then(data => {
+                                                console.log("sended:", data);
+                                            })
                                         }
+                                        this.ask(mainQuestion);
+                                        this.user().data.questionToRepeat = mainQuestion;
+                                        this.user().data.correctMainAnswer = true;
+                                        delete this.user().data.subQuestionsFinished;
+                                    } else {
+                                        let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                        if (valuesToRead !== undefined) {
+                                            this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                            this.user().data.correctMainAnswer = false;
+                                        }
+                                    }
+                                } else {
+                                    if (this.user().data.hardQuestion !== true) {
+                                        this.user().data.mainQuestionIndex++;
                                     }
                                     this.ask(mainQuestion);
                                     this.user().data.questionToRepeat = mainQuestion;
                                 }
                             });
                         }
-                        else {
-                            this.tell("Survey finished");
-                            this.user().data = {};
-                        }
                         break;
                     }
+                    break;
                 }
-            }
-        },
-        'ToAnswersIntent': function () {
-            if (this.user().data.simpleQueston === true) {
-                this.ask("You can only answer with this variants");
-            } else if (this.user().data.hardQuestion === true) {
-                this.user().data.prevIntent = true;
-                this.toIntent('GetFirstSurveyIntent');
-            }
+                else {
+                    this.user().data.simpleQueston = true;
+                    delete this.user().data.hardQuestion;
+                    if (survey[i] !== undefined) {
+                        mainQuestion = survey[i].text;
+                        checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
+                            if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs !== undefined) {
+                                let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                delete this.user().data.subQuestionsFinished;
+                                if (answerValue !== undefined) {
 
-        },
-        'AMAZON.RepeatIntent': function () {
-            this.ask(this.user().data.questionToRepeat);
-        },
-        'END': function () {
-            delete this.user().data.changeIndex;
-            if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMPTS' && this.user().data.correctMainAnswer === false) {
-                this.tell("Come later");
-                this.user().data.mainQuestionIndex--;
-                delete this.user().data.correctMainAnswer;
-            } else if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMTS' && this.user().data.correctSubAnswer === false) {
-                this.tell("Come later");
-                this.user().data.subQuestionIndex--;
-                delete this.user().data.correctSubAnswer;
-            } else {
-                if (this.user().data.hardQuestion === true && this.user().data.prevIntent === true) {
-                    this.user().data.subQuestionIndex--;
-                    delete this.user().data.prevIntent;
-                } else if (this.user().data.simpleQueston === true) {
-                    this.user().data.mainQuestionIndex--;
+
+                                    if (this.user().data.changeIndex === true) {
+                                        this.user().data = {};
+                                        this.user().data.surveyFinished = true;
+                                        let userAnswer = {
+                                            questionId: answerValue.question,
+                                            answerId: answerValue.answerId,
+                                            userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
+                                            device: this.alexaSkill().getDeviceId(),
+                                            isCompleted: true
+                                        }
+                                        r.sendUserAnswers(userAnswer).then(data => {
+                                            console.log("finished :", data);
+                                        })
+                                        this.tell("survey finished, thank you for your answer!!!");
+                                        return false;
+                                    } else {
+                                        let userAnswer = {
+                                            questionId: answerValue.question,
+                                            answerId: answerValue.answerId,
+                                            userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
+                                            device: this.alexaSkill().getDeviceId()
+                                        }
+                                        r.sendUserAnswers(userAnswer).then(data => {
+                                            console.log("sended", data);
+                                        });
+                                    }
+                                    this.user().data.mainQuestionIndex++;
+                                    this.user().data.correctMainAnswer = true;
+                                    this.ask(mainQuestion);
+                                    if (this.user().data.mainQuestionIndex === survey.length) {
+                                        this.user().data.changeIndex = true;
+                                    }
+                                    this.user().data.questionToRepeat = mainQuestion;
+                                } else {
+                                    let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
+                                    if (valuesToRead !== undefined) {
+                                        this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
+                                        this.user().data.correctMainAnswer = false;
+                                    }
+
+                                }
+                            } else {
+                                if (this.user().data.subQuestionsFinished === undefined) {
+                                    this.user().data.mainQuestionIndex++;
+                                    if (this.user().data.mainQuestionIndex === survey.length) {
+                                        this.user().data.changeIndex = true;
+                                    }
+                                }
+                                this.ask(mainQuestion);
+                                this.user().data.questionToRepeat = mainQuestion;
+                            }
+                        });
+                    }
+                    else {
+                        this.tell("Survey finished");
+                        this.user().data = {};
+                    }
+                    break;
                 }
-                this.tell("ok");
             }
-        },
-    });
-}
+        }
+    },
+    'ToAnswersIntent': function () {
+        if (this.user().data.simpleQueston === true) {
+            this.ask("You can only answer with this variants");
+        } else if (this.user().data.hardQuestion === true) {
+            this.user().data.prevIntent = true;
+            this.toIntent('GetFirstSurveyIntent');
+        }
+
+    },
+    'AMAZON.RepeatIntent': function () {
+        this.ask(this.user().data.questionToRepeat);
+    },
+    'END': function () {
+        delete this.user().data.changeIndex;
+        if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMPTS' && this.user().data.correctMainAnswer === false) {
+            this.tell("Come later");
+            this.user().data.mainQuestionIndex--;
+            delete this.user().data.correctMainAnswer;
+        } else if (this.requestObj.request.reason === 'EXCEEDED_MAX_REPROMTS' && this.user().data.correctSubAnswer === false) {
+            this.tell("Come later");
+            this.user().data.subQuestionIndex--;
+            delete this.user().data.correctSubAnswer;
+        } else {
+            if (this.user().data.hardQuestion === true && this.user().data.prevIntent === true) {
+                this.user().data.subQuestionIndex--;
+                delete this.user().data.prevIntent;
+            } else if (this.user().data.simpleQueston === true) {
+                this.user().data.mainQuestionIndex--;
+            }
+            this.tell("ok");
+        }
+    },
+});
 
 
 module.exports.app = app;
