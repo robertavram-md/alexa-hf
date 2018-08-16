@@ -33,15 +33,35 @@ new CronJob('0 0 * * *', () => {
 
 app.setHandler({
     'LAUNCH': async function () {
-        if (this.user().data.surveyFinished === true || this.user().data.surveyFinished === undefined) {
+        if (this.user().data.surveyFinished === true) {
             await r.getSurveyQuestions().then(result => {
                 this.user().data.survey = result;
             });
+            this.toIntent('GetFirstSurveyIntent');
             delete this.user().data.surveyFinished;
+        } else if (this.user().data.surveyFinished === undefined && this.user().data.mainQuestionIndex >= 0) {
+            this.followUpState('CheckSurvey').ask('You have a questionnaire partially completed. Do you want to to resume the survey or start a new one?')
+        } else {
+            await r.getSurveyQuestions().then(result => {
+                this.user().data.survey = result;
+            });
+            this.toIntent('GetFirstSurveyIntent');
         }
-        this.toIntent('GetFirstSurveyIntent');
+    },
+    'CheckSurvey': {
+        'ResumeSurveyIntent': function () {
+            this.toIntent('GetFirstSurveyIntent');
+        },
+        'StartNewSurveyIntent': async function () {
+            this.user().data = {};
+            await r.getSurveyQuestions().then(result => {
+                this.user().data.survey = result;
+            });
+            this.toIntent('GetFirstSurveyIntent');
+        },
     },
     'GetFirstSurveyIntent': function () {
+        this.removeState();
         const { survey } = this.user().data;
         if (this.user().data.mainQuestionIndex <= -1) {
             this.user().data.mainQuestionIndex = 0;
@@ -304,7 +324,6 @@ app.setHandler({
             this.user().data.prevIntent = true;
             this.toIntent('GetFirstSurveyIntent');
         }
-
     },
     'AMAZON.RepeatIntent': function () {
         this.ask(this.user().data.questionToRepeat);

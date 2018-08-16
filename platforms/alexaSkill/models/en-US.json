@@ -4,6 +4,20 @@
       "invocationName": "heart failure",
       "intents": [
         {
+          "name": "ResumeSurveyIntent",
+          "samples": [
+            "resume",
+            "resume survey"
+          ]
+        },
+        {
+          "name": "StartNewSurveyIntent",
+          "samples": [
+            "start a new one",
+            "start new"
+          ]
+        },
+        {
           "name": "GetFirstSurveyIntent",
           "slots": [
             {
