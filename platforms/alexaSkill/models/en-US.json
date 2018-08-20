@@ -32,7 +32,8 @@
         {
           "name": "ToAnswersIntent",
           "samples": [
-            "answer questions"
+            "proceed to questions",
+            "proceed to question"
           ]
         },
         {

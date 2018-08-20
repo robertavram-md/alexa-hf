@@ -83,7 +83,8 @@ app.setHandler({
                         this.user().data.subQuestionsFinished = true;
                         this.user().data.mainQuestionIndex++;
                         this.user().data.subQuestionIndex = 0;
-                        this.user().data.prevIntent = false;
+                        // this.user().data.prevIntent = false;
+                        delete this.user().data.prevIntent;
                         if (this.user().data.mainQuestionIndex === survey.length) {
                             this.user().data.changeIndex = true;
                         }
@@ -117,6 +118,7 @@ app.setHandler({
                                             console.log("sended: ", data);
                                         })
                                         this.ask(subQuestion);
+                                        delete this.user().data.hardQCheck;
                                         this.user().data.questionToRepeat = subQuestion;
                                         this.user().data.subQuestionIndex++;
                                         this.user().data.correctSubAnswer = true;
@@ -133,66 +135,16 @@ app.setHandler({
                                     }
                                     this.user().data.questionToRepeat = subQuestion;
                                     this.ask(subQuestion);
+                                    delete this.user().data.hardQCheck;
                                 }
                             })
-                        } else if (this.user().data.prevIntent === false) {
-                            mainQuestion = survey[i].text;
-                            checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
-                                if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
-                                    let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
-                                    if (answerValue !== undefined) {
-
-                                        if (this.user().data.changeIndex === true) {
-                                            this.user().data = {};
-                                            this.user().data.surveyFinished = true;
-                                            let userAnswer = {
-                                                questionId: answerValue.question,
-                                                answerId: answerValue.answerId,
-                                                userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                device: this.alexaSkill().getDeviceId(),
-                                                isCompleted: true
-                                            }
-                                            r.sendUserAnswers(userAnswer).then(data => {
-                                                console.log("finished :", data);
-                                            })
-                                            this.tell("survey finished, thank you for your answer!!!");
-                                            return false;
-                                        } else {
-                                            let userAnswer = {
-                                                questionId: answerValue.question,
-                                                answerId: answerValue.answerId,
-                                                userId: crypto.createHash('md5').update(this.getUserId()).digest('hex'),
-                                                device: this.alexaSkill().getDeviceId()
-                                            }
-                                            r.sendUserAnswers(userAnswer).then(data => {
-                                                console.log("sended: ", data);
-                                            })
-                                        }
-                                        this.ask(mainQuestion);
-                                        this.user().data.questionToRepeat = mainQuestion;
-                                        this.user().data.correctMainAnswer = true;
-                                        delete this.user().data.subQuestionsFinished;
-                                    } else {
-                                        let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
-                                        if (valuesToRead !== undefined) {
-                                            this.ask(`Sorry, this answer is not valid. You can only choose from: ${valuesToRead}. What's your choice? `);
-                                            this.user().data.correctMainAnswer = false;
-                                        }
-                                    }
-                                } else {
-                                    if (this.user().data.hardQuestion !== true) {
-                                        this.user().data.mainQuestionIndex++;
-                                    }
-                                    this.ask(mainQuestion);
-                                    this.user().data.questionToRepeat = mainQuestion;
-                                }
-                            });
                         } else {
                             checkUserInput.call(this, (prevMainQuestion, prevSubQuestion, inputs) => {
                                 if (prevMainQuestion !== undefined && prevSubQuestion !== undefined && inputs) {
                                     let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
+                                    console.log("answerValue: ", answerValue);
                                     if (answerValue !== undefined) {
-
+                                        
                                         if (this.user().data.changeIndex === true) {
                                             this.user().data = {};
                                             this.user().data.surveyFinished = true;
@@ -219,10 +171,15 @@ app.setHandler({
                                                 console.log("sended:", data);
                                             })
                                         }
-                                        this.ask(mainQuestion);
+                                            console.log("reeasd");
+                                            this.ask(mainQuestion);
+                                            this.user().data.hardQCheck = true;
+                                       
                                         this.user().data.questionToRepeat = mainQuestion;
                                         this.user().data.correctMainAnswer = true;
                                         delete this.user().data.subQuestionsFinished;
+                                    } else if (answerValue === undefined && this.user().data.hardQCheck === true ) {
+                                        this.ask("Sorry, I did not catch that. To hear the instructions again say 'repeat'. To start with questions, say proceed to questions'. If you want to exit survey now say 'stop'");
                                     } else {
                                         let valuesToRead = getQuestionAnswers.call(this, prevMainQuestion, prevSubQuestion);
                                         if (valuesToRead !== undefined) {
@@ -231,10 +188,12 @@ app.setHandler({
                                         }
                                     }
                                 } else {
+                                    console.log("test123");
                                     if (this.user().data.hardQuestion !== true) {
                                         this.user().data.mainQuestionIndex++;
                                     }
                                     this.ask(mainQuestion);
+                                    this.user().data.hardQCheck = true;
                                     this.user().data.questionToRepeat = mainQuestion;
                                 }
                             });
@@ -253,8 +212,6 @@ app.setHandler({
                                 let answerValue = compareUserInputAndAnswer.call(this, prevMainQuestion, prevSubQuestion, inputs);
                                 delete this.user().data.subQuestionsFinished;
                                 if (answerValue !== undefined) {
-
-
                                     if (this.user().data.changeIndex === true) {
                                         this.user().data = {};
                                         this.user().data.surveyFinished = true;
@@ -318,6 +275,7 @@ app.setHandler({
         }
     },
     'ToAnswersIntent': function () {
+        this.removeState();
         if (this.user().data.simpleQueston === true) {
             this.ask("You can only answer with this variants");
         } else if (this.user().data.hardQuestion === true) {

@@ -8,11 +8,11 @@ const {app} = require('./app/app.js');
 // =================================================================================
 
 if (app.isWebhook()) {
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3001;
     Webhook.listen(port, () => {
         console.log(`Example server listening on port ${port}!`);
     });
-    Webhook.post('/webhook', (req, res) => {
+    Webhook.post('/', (req, res) => {
         app.handleWebhook(req, res);
     });
 }
