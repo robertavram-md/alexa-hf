@@ -25,7 +25,7 @@
       "custom": {
         "endpoint": {
           "sslCertificateType": "Wildcard",
-          "uri": "https://webhook.jovo.cloud/2bdbe42a-49f6-40b7-abd8-bcd9f28b8aaa"
+          "uri": "https://webhook.jovo.cloud/fa2cdf29-6de2-4047-9636-4ec87dc408a2"
         },
         "interfaces": []
       }
