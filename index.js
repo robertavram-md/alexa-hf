@@ -18,5 +18,6 @@ if (app.isWebhook()) {
 }
 
 exports.handler = (event, context, callback) => {
+    context.callbackWaitsForEmptyEventLoop = false;
     app.handleLambda(event, context, callback);
 };

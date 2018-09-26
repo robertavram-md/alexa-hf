@@ -4,5 +4,5 @@
 			"name": "alexa"
 		}
 	},
-	"endpoint": "https://webhook.jovo.cloud/2bdbe42a-49f6-40b7-abd8-bcd9f28b8aaa"
+	"endpoint": "http://149.28.47.110/"
 }
