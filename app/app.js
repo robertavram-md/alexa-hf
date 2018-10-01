@@ -15,7 +15,7 @@ const app = new App(config);
 let answerTypes = data.answerTypes[0];
 let answers = data.answers[0];
 const CronJob = require('cron').CronJob;
-new CronJob('0 0 * * *', () => {
+new CronJob('00 59 * * * *', () => {
     r.getAnswersData().then(data => {
         let obj = {
             answerTypes: [],
